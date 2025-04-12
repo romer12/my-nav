@@ -155,10 +155,13 @@ func deleteGroup(c *gin.Context) {
 	id := c.Param("id")
 	var links []DTO.Link
 	db.Where("group_id = ?", id).Find(&links)
+
+	var linkIds []int
 	if len(links) > 0 {
 		for _, link := range links {
-			doDeleteLink(link.ID)
+			linkIds = append(linkIds, link.ID)
 		}
+		doDeleteLink(linkIds)
 	}
 	db.Delete(&DTO.Group{}, id)
 
@@ -167,13 +170,13 @@ func deleteGroup(c *gin.Context) {
 
 func deleteLink(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	doDeleteLink(id)
+	doDeleteLink([]int{id})
 
 	utils.ReturnSuccess(c, "已删除该链接", nil)
 }
 
-func doDeleteLink(id int) {
-	db.Delete(&DTO.Link{}, id)
+func doDeleteLink(ids []int) {
+	db.Delete(&DTO.Link{}, ids)
 }
 
 func importJson(c *gin.Context) {
