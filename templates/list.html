@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="/static/bootstrap.min.css">
+    <title>我的导航</title>
+    <style>
+        body{
+            padding: 0;
+            margin: 0;
+        }
+        button{
+            border: none;
+            outline: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        input{outline: none;}
+        .container{
+            margin: 0 auto;
+            width: 70%;
+            display: flex;
+            flex-direction: column;
+            transition: ease-in-out .2s;
+        }
+        .mb-20{margin-bottom: 20px;}
+        .mb-10{margin-bottom: 10px;}
+        /*右边*/
+        .container .title{text-align: center;}
+        .container .operation{
+            display: flex;
+            justify-content: flex-end;
+        }
+        .container .operation button{
+            margin-left: 10px;
+        }
+        .container .operation .op-btn,.container .operation .manager-btn{
+            padding: 10px 20px;
+            background-color: #007acc;
+            color: white;
+        }
+        .container .operation .op-btn:hover{background-color: #0085dc;}
+        .container .operation .add-website{background-color: darkgreen;}
+        .container .operation .add-website:hover{background-color: #007500;}
+        /*分组*/
+        .group-list{
+            display: grid;
+            gap: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(0,0,0,.1);
+        }
+        .group-list button:hover{
+            background-color: #c6c6c6;
+        }
+        .group-list-active{
+            /*background-color: #dbdbdb;*/
+            background-color: #df1e1e;
+            color: white;
+        }
+        .group-list-active button{
+            background-color: #e18080;
+            color: white;
+        }
+        .group-list-active button:hover{
+            background-color: #dd6d6d;
+        }
+        .group-list-item{
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            flex-direction: column;
+        }
+        .group-list-item:hover{box-shadow: 0 0 10px rgba(0,0,0,0.1);}
+        .item-title{
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .item-bottom{
+            display: flex;
+            justify-content: space-around;
+        }
+        .item-bottom button{font-size: 12px;padding: 5px 10px;}
+        .link-list{
+            display: grid;
+            gap: 20px;
+        }
+        .link-list-item{
+            font-size: 14px;
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+        }
+        .link-list-item a{text-decoration: none;flex: 1;}
+        .link-list-item button{font-size: 12px;}
+        /*屏幕简单适配*/
+        @media (max-width: 600px){
+            .media-group-class{grid-template-columns: repeat(1,1fr);}
+            .media-link-class{grid-template-columns: repeat(1,1fr);}
+        }
+        @media (min-width: 601px) and (max-width: 1200px){
+            .media-group-class{grid-template-columns: repeat(2,1fr);}
+            .media-link-class{grid-template-columns: repeat(2,1fr);}
+        }
+
+        @media (min-width: 1201px) and (max-width: 1500px){
+            .media-group-class{grid-template-columns: repeat(3,1fr);}
+            .media-link-class{grid-template-columns: repeat(2,1fr);}
+        }
+
+        @media (min-width: 1501px){
+            .media-group-class{grid-template-columns: repeat(5,1fr);}
+            .media-link-class{grid-template-columns: repeat(2,1fr);}
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1 class="title">我的导航</h1>
+    <div class="operation mb-20">
+        <button class="manager-btn" data-bs-toggle="modal" data-bs-target="#addGroupModal">添加分组</button>
+    </div>
+    <div class="group-list media-group-class mb-20" id="groupList"></div>
+    <div class="link-list media-link-class mb-20"></div>
+</div>
+
+<!--添加modal-->
+<div class="modal fade" id="addGroupModal" tabindex="-1" aria-labelledby="addGroupModal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5">添加分组</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <label>
+                    请输入分组名：
+                    <input type="text" id="createGroupName" class="group-name">
+                </label>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="closeCreateModal" data-bs-dismiss="modal">关闭</button>
+                <button type="button" id="saveGroupBtn" class="btn btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--编辑分组-->
+<div class="modal fade" id="editGroupModal" tabindex="-1" aria-labelledby="editGroupModal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5">编辑分组</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <label>
+                    输入新分组名：
+                    <input type="text" id="editGroupName" class="group-name">
+                </label>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="closeEditModal" data-bs-dismiss="modal">关闭</button>
+                <button type="button" id="editGroupBtn" class="btn btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--新增链接-->
+<div class="modal fade" id="addLinkModal" tabindex="-1" aria-labelledby="addLinkModal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5">新增链接</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <label class="mb-10">
+                    输入链接名：
+                    <input type="text" id="addLinkName" class="group-name">
+                </label>
+                <label class="mb-10">
+                    输入链接地址：
+                    <input type="text" id="addLinkTarget" class="group-name">
+                </label>
+                <div class="mb-10">
+                    <label for="groupSelect">所属分组：</label>
+                    <select name="groupOptions" id="groupSelect"></select>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="closeLinkModal" data-bs-dismiss="modal">关闭</button>
+                <button type="button" id="saveLinkBtn" class="btn btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--删除modal-->
+<div class="modal fade" id="delModal" tabindex="-1" aria-labelledby="delModal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5">提示</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body del-title"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="closeDelModal">取消</button>
+                <button type="button" class="btn btn-primary" id="delBtn">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/static/bootstrap.bundle.min.js"></script>
+<script>
+    let editGroupId = null,
+        delId = null,
+        delType = null,
+        groupData = null,
+        addLinkName = null,
+        addLinkTarget = null,
+        addLinkGroup = null,
+        currentIndex = null;
+    // DOM加载完成后初始化页面
+    document.addEventListener('DOMContentLoaded', function() {
+
+        // 加载数据
+        loadGroups().then( () => {
+            // 渲染第一项分组下的所有链接
+            currentIndex = 0;
+            let linkLen = groupData[currentIndex].links.length;
+            if(linkLen > 0) {
+                let container = document.querySelector('.link-list');
+                const data = groupData[currentIndex].links;
+                container.innerHTML = '';
+                container.innerHTML = data.map(link => `
+                            <div class="link-list-item">
+                                <a href="${link.url}" target="_blank">${link.title}</a>
+                                <button data-bs-toggle="modal" data-bs-target="#delModal" onclick="delRecord(2,${link.id})">删除</button>
+                            </div>
+                        `).join('')
+            }
+        }).then( () => {
+            // 给第一项分组添加激活样式
+            let linksElements = document.querySelectorAll('.group-list-item')
+            if(linksElements.length > 0){
+                linksElements.forEach(btn => {
+                    btn.classList.remove('group-list-active');
+                });
+                linksElements[currentIndex].classList.add('group-list-active');
+            }
+        })
+
+        // 新建分组按钮事件
+        document.getElementById('saveGroupBtn').addEventListener('click', saveGroup);
+        // 编辑分组按钮事件
+        document.getElementById('editGroupBtn').addEventListener('click', editGroup);
+
+        // 删除
+        document.getElementById('delBtn').addEventListener('click', doDelete);
+
+        // 保存链接按钮事件
+        document.getElementById('saveLinkBtn').addEventListener('click', saveLink);
+
+        // 监听下拉框选择
+        document.getElementById('groupSelect').addEventListener('change',selectedGroup);
+    });
+
+    // 添加分组弹窗
+    async function saveGroup() {
+        const name = document.getElementById('createGroupName').value;
+        if(!name) {
+            alert('请输入分组名！');
+            return false;
+        }
+        await fetch('/groups', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name })
+        })
+        // 关闭modal
+        const addGroupModal = document.getElementById('closeCreateModal');
+        await closeModal(addGroupModal);
+
+        // 将name置空
+        document.getElementById('createGroupName').value = '';
+        // 重新加载数据
+        await loadGroups();
+        await reloadLinks();
+    }
+
+    function editOperation(newName,id) {
+        document.getElementById('editGroupName').value = newName;
+        editGroupId = id;
+    }
+
+    // 修改分组
+    async function editGroup() {
+        const editName = document.getElementById('editGroupName').value;
+        if(!editName) {
+            alert('请输入分组名！');
+            return false;
+        }
+        if(!editGroupId){
+            alert('id参数错误！');
+            return false;
+        }
+        await fetch('/group/' + editGroupId, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: editName, id: editGroupId })
+        })
+        // 关闭modal
+        const editModal = document.getElementById('closeEditModal');
+        await closeModal(editModal);
+
+        // 将name置空
+        name.value = '';
+        // 重新加载数据
+        await loadGroups();
+        await reloadLinks();
+    }
+
+    // 删除分组或链接
+    async function delRecord(type,id){
+        delId = id;
+        let element = document.querySelector('.del-title');
+        switch (type) {
+            case 1:
+                delType = 1;
+                element.innerHTML = `<span style="color:red;">注意！删除分组同时将清空该分组下的所有链接！确定删除此分组？</span>`;
+                break;
+            case 2:
+                // 删除链接
+                delType = 2;
+                element.innerHTML = `<span style="color:red;">确定删除此链接？</span>`;
+                break;
+        }
+    }
+    // 执行删除
+    async function doDelete(){
+        if(!delType || !delId){
+            alert('执行类型或id参数错误');
+            return false;
+        }
+        switch (delType) {
+            case 1:
+                // 删除分组
+                const res = await fetch(`/groups/${delId}`, { method: 'DELETE' });
+                const result = await res.json();
+                if(result.code !== 0) {
+                    alert(result.msg)
+                    return false;
+                }
+                break;
+            case 2:
+                // 删除链接
+                const delRes = await fetch(`/links/${delId}`, { method: 'DELETE' });
+                const delResult = await delRes.json();
+                if(delResult.code !== 0) {
+                    alert(delResult.msg)
+                    return false;
+                }
+                break;
+        }
+        // 关闭modal
+        const delLinkModel = document.getElementById('closeDelModal');
+        await closeModal(delLinkModel);
+
+        delType = null;
+        delId = null;
+        // 重新加载数据
+        document.getElementById('groupList').innerHTML = '';
+        document.querySelector('.link-list').innerHTML = '';
+        await loadGroups();
+        await reloadLinks();
+    }
+
+    // 下拉框选择
+    function selectedGroup() {
+        addLinkGroup = document.getElementById('groupSelect').value;
+        console.log(document.getElementById('groupSelect').value)
+    }
+
+    // 添加链接
+    async function saveLink(){
+        addLinkName = document.getElementById('addLinkName').value;
+        addLinkTarget = document.getElementById('addLinkTarget').value;
+        if(!addLinkName || !addLinkTarget || !addLinkGroup){
+            alert('请将表单完成再提交！');
+            return false;
+        }
+        const res = await fetch('/links', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title: addLinkName, url: addLinkTarget, group_id: parseInt(addLinkGroup) })
+        })
+        const result = await res.json();
+        console.log('添加结果')
+        console.log(result)
+        if(result.code !== 0) {
+            alert(result.msg)
+            return false;
+        }
+
+        // 关闭modal
+        const addLinkModel = document.getElementById('closeLinkModal');
+        await closeModal(addLinkModel);
+
+        // 将name置空
+        document.getElementById('addLinkName').value = '';
+        document.getElementById('addLinkTarget').value = '';
+        addLinkName = null;
+        addLinkTarget = null;
+        addLinkGroup = null;
+        // 重新加载数据
+        await loadGroups();
+        await reloadLinks();
+    }
+
+    async function reloadLinks(){
+        let groupElements = document.querySelectorAll('.group-list-item');
+        if(groupElements.length > 0){
+            groupElements[currentIndex].click()
+            //await showGroupLinks(groupElements[currentIndex]);
+        }
+
+    }
+
+    // 分组下的链接数据
+    async function showGroupLinks(ele) {
+        currentIndex = parseInt(ele.getAttribute('data-index'));
+        const groupId = parseInt(ele.getAttribute('data-id'));
+        if(!groupId) {
+            alert('id参数错误');
+            return false;
+        }
+        // 移除所有节点的选中
+        let groups = document.querySelectorAll('.group-list-item')
+        if(groups.length > 0){
+            groups.forEach(btn => {
+                btn.classList.remove('group-list-active');
+            });
+        }
+        // 给当前元素设置选中背景
+        ele.classList.add('group-list-active');
+
+        let container = document.querySelector('.link-list');
+        const res = await fetch(`/groups/${groupId}/links`,{method: 'GET'});
+        const result = await res.json();
+        if(result.code !== 0) {
+            alert(result.msg)
+            return false;
+        }
+        const data = result.data;
+        container.innerHTML = '';
+        container.innerHTML = data.map(link => `
+            <div class="link-list-item">
+                <a href="${link.url}" target="_blank">${link.title}</a>
+                <button data-bs-toggle="modal" data-bs-target="#delModal" onclick="delRecord(2,${link.id})">删除</button>
+            </div>
+        `).join('')
+    }
+
+    // 分组下拉框
+    async function showAddLinkModal(ele){
+        document.getElementById('addLinkName').value = '';
+        document.getElementById('addLinkTarget').value = '';
+        const selectedGroupId = parseInt(ele.getAttribute('data-pid'));
+        const container = document.getElementById('groupSelect');
+        let html = '';
+        html += `<option value="">=请选择=</option>`
+        groupData.map(function(group){
+            html += `<option value="${group.id}">${group.name}</option>`;
+        });
+        container.innerHTML = html;
+        addLinkGroup = container.value = selectedGroupId;
+
+    }
+
+    // 关闭弹窗
+    async function closeModal(ele) {
+        ele.click();
+    }
+
+    //加载数据
+    async function loadGroups() {
+        const res = await fetch('/groups');
+        const result = await res.json();
+        if(result.code !== 0) {
+            alert(result.msg)
+            return false;
+        }
+        console.log('结果')
+        console.log(result)
+        const groups = groupData = result.data;
+        const container = document.getElementById('groupList');
+        container.innerHTML = '';
+
+        container.innerHTML = groups.map((group,index) => `
+                <div class="group-list-item" data-index="${index}" data-id="${group.id}" onclick="showGroupLinks(this)">
+                    <div class="item-title">
+                        <strong>${group.name}</strong>
+                    </div>
+                    <div class="item-bottom">
+                        <button data-bs-toggle="modal" data-pid="${group.id}" data-bs-target="#addLinkModal" onclick="showAddLinkModal(this)">添加链接</button>
+                        <button data-bs-toggle="modal" data-id="${group.id}" data-bs-target="#editGroupModal" onclick="editOperation('${group.name}',${group.id})">编辑</button>
+                        <button data-bs-toggle="modal" data-bs-target="#delModal" onclick="delRecord(1,${group.id})">删除</button>
+                    </div>
+                </div>
+            `).join('')
+    }
+</script>
+</body>
+</html>
