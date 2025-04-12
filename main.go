@@ -266,21 +266,9 @@ func doImportFull(content []byte) error {
 				})
 			}
 		}
-	}
 
-	if len(groups) > 0 {
-		for i, item := range groups {
-			group := item
-			db.Model(&DTO.Group{}).Create(&group)
-			if len(item.Links) > 0 {
-				for j, item2 := range item.Links {
-					groups[i].Links[j].GroupID = group.ID
-					// 循环插入链接
-					db.Model(&DTO.Link{}).Create(&item2)
-				}
-
-			}
-		}
+		// 批量插入
+		db.Model(&DTO.Group{}).Create(&groups)
 	}
 
 	return nil
@@ -301,13 +289,12 @@ func doImportGroup(content []byte, groupId int) error {
 			}
 		}
 
-		for _, item := range links {
+		for i, item := range links {
 			if item.Title != "" && item.URL != "" {
-				link := item
-				link.GroupID = groupId
-				db.Model(&DTO.Link{}).Create(&link)
+				links[i].GroupID = groupId
 			}
 		}
+		db.Model(&DTO.Link{}).Create(&links)
 	} else {
 		return errors.New("解析文件数据为空，有可能是格式不正确")
 	}

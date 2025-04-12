@@ -3,7 +3,7 @@ package DTO
 type Group struct {
 	ID    int    `json:"id" gorm:"primaryKey"`
 	Name  string `json:"name"`
-	Links []Link `json:"links" gorm:"foreignKey:GroupID"`
+	Links []Link `json:"links" gorm:"foreignKey:GroupID"` // 设置外键之后，插入记录时会关联插入links表
 }
 
 type Link struct {
