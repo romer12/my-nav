@@ -2,18 +2,24 @@
 package main
 
 import (
+	"embed"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
+	"html/template"
 	"io"
 	"nav/DTO"
+	"nav/assets"
 	"nav/middleware"
 	"nav/utils"
 	"net/http"
 	"strconv"
 )
+
+var templates embed.FS
 
 var db *gorm.DB
 
@@ -22,14 +28,24 @@ func main() {
 	var err error
 	db, err = gorm.Open(sqlite.Open("nav.db"), &gorm.Config{})
 	if err != nil {
-		panic("数据库连接失败")
+		fmt.Println("数据库连接失败")
+		return
 	}
-	db.AutoMigrate(&DTO.Group{}, &DTO.Link{})
+	err = db.AutoMigrate(&DTO.Group{}, &DTO.Link{})
+	if err != nil {
+		fmt.Println("数据库迁移失败：" + err.Error())
+		return
+	}
 
 	// 初始化Gin
+	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
-	r.Static("/static", "./static")
-	r.LoadHTMLGlob("templates/*")
+
+	//初始化静态资源
+	r.StaticFS("assets", http.FS(assets.Static))
+	// 设置模板资源
+	r.SetHTMLTemplate(template.Must(template.New("").ParseFS(assets.Template, "templates/*")))
+	// r.LoadHTMLGlob("templates/*") //dev模式下使用这种方式
 
 	// 全局中间件配置
 	r.Use(
