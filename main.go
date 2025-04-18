@@ -38,7 +38,7 @@ func main() {
 	}
 
 	// 初始化Gin
-	gin.SetMode(gin.ReleaseMode)
+	gin.SetMode(gin.DebugMode)
 	r := gin.Default()
 
 	//初始化静态资源
@@ -64,7 +64,18 @@ func main() {
 	r.DELETE("/links/:id", deleteLink)
 	r.POST("/import", importJson)
 
-	r.Run(":9120")
+	go func() {
+		err = r.Run(":9120")
+		if err != nil {
+			fmt.Println("服务器启动失败：" + err.Error())
+			return
+		}
+	}()
+
+	fmt.Println("【启动成功，请打开浏览器，在地址栏输入 http://127.0.0.1:9120/ 并按下回车键进行访问】")
+	fmt.Println("【按下ctrl + c或者直接关闭命令行窗口结束运行】")
+
+	select {}
 }
 
 func indexPage(c *gin.Context) {
