@@ -6,6 +6,7 @@
 - [x] 分组下链接的添加、编辑、删除
 - [x] 导入chrome的书签json文件
 - [x] 导入特定格式的json文件到某个组
+- [x] 搜索
 
 注意：
 chrome的书签json文件位置
@@ -34,4 +35,13 @@ go mod tidy
 ```bash
 # 在项目目录下
 go run main.go
+```
+
+### 打包成可执行文件
+```bash
+windows:
+go build -o ma_nav.exe
+
+linux:
+go build
 ```

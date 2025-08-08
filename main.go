@@ -38,7 +38,7 @@ func main() {
 	}
 
 	// 初始化Gin
-	gin.SetMode(gin.DebugMode)
+	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
 
 	//初始化静态资源
