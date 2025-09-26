@@ -65,7 +65,7 @@ onUnmounted(() => {
   justify-content: center;
 }
 .fixed-top .fixed-top-content:hover{
-  background-color: #e5353e;
+  background-color: #0c7a43;
 }
 .fixed-top .fixed-top-content:hover .icon{
   color: #ffffff;

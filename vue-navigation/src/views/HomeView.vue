@@ -267,12 +267,6 @@
           </div>
         </n-tab-pane>
         <!--普通json导入-->
-        <n-tab-pane name="group" tab="导入链接到分组">
-          <div class="json-example">
-            <p>json格式示例：</p>
-            <div style="overflow-x: auto;"><pre v-if="jsonHandleType == 'group'">{{ jsonFileExample.group }}</pre></div>
-          </div>
-        </n-tab-pane>
         <n-tab-pane name="normal" tab="导入分组和链接数据">
           <div class="json-example">
             <p>json格式示例：</p>
@@ -280,6 +274,33 @@
           </div>
         </n-tab-pane>
       </n-tabs>
+      <div class="request-error" v-show="uploadError"><p style="color: red;">{{ uploadError }}</p></div>
+      <n-upload
+        ref="uploadRef"
+        :default-upload="false"
+        :multiple="false"
+        :file-list="fileList"
+        :max="1"
+        accept=".json"
+        @change="handleUploadChange"
+      >
+        <n-button>选择文件</n-button>
+      </n-upload>
+    </modal-alert>
+
+    <modal-alert
+      v-model:show="groupImportDialog"
+      title="上传json文件并导入"
+      confirm-text="确定"
+      cancel-text="关闭"
+      @cancel="groupImportDialog = false"
+      @confirm="jsonImportSubmit"
+      style="width: 600px;"
+    >
+      <div class="json-example">
+        <p>json格式示例：</p>
+        <div style="overflow-x: auto;"><pre>{{ jsonFileExample.group }}</pre></div>
+      </div>
       <div class="request-error" v-show="uploadError"><p style="color: red;">{{ uploadError }}</p></div>
       <n-upload
         ref="uploadRef"
@@ -354,6 +375,7 @@ interface ExportItem {
   links?: LinkItem[]
 }
 
+const groupImportDialog = ref(false)
 const headerTabShow = ref(false)
 const searchText = ref('') // 搜索关键词
 const mainBoxShow = computed(() => {
@@ -749,6 +771,7 @@ const tabSelect = (value:string) => {
 // 导入chrome书签json文件数据
 const handleImport = async() => {
   jsonDialogVisible.value = !jsonDialogVisible.value
+  jsonHandleType.value = 'google'
   resetFileForm()
   uploadData.value = {
     op_type: jsonHandleType.value,
@@ -811,7 +834,7 @@ const handleExport = async() => {
 }
 // 从json文件导入链接数据到某个组
 const handleGroupImport = async(item: any) => {
-  jsonDialogVisible.value = !jsonDialogVisible.value
+  groupImportDialog.value = !groupImportDialog.value
   jsonHandleType.value = 'group'
   resetFileForm()
   uploadData.value = {
@@ -827,13 +850,13 @@ const resetFileForm = () => {
 }
 
 const jsonImportSubmit = () => {
-
   if(!fileList.value.length) {
     $message.error('请先选择文件！')
     return false
   }
   $loadingBar.start()
   jsonDialogVisible.value = false
+  groupImportDialog.value = false
 
   fileList.value.forEach(file => {
     uploadFile(file, uploadData.value)
@@ -844,7 +867,7 @@ const uploadFile = async(file: any,formOtherData: any) => {
   const formData = new FormData();
   formData.append('file', file.file); // 将文件添加到 FormData 中
 
-  let url = `${apiUrl}/import?type=` + formOtherData.op_type + '&group_id='+ formOtherData.group_id
+  let url = `${apiUrl}/import?type=${jsonHandleType.value}&group_id=${formOtherData.group_id}`
 
   try {    
     const response = await fetch(url, {
@@ -860,12 +883,21 @@ const uploadFile = async(file: any,formOtherData: any) => {
     const data = await response.json(); // 解析 JSON 响应
     if(data.code !== 0) {
       $loadingBar.finish()
-      jsonDialogVisible.value = true
+      if (jsonHandleType.value !== 'group') {
+        jsonDialogVisible.value = true
+      }else {
+        groupImportDialog.value = true
+      }
+      
       uploadError.value = data.msg
       $message.error(data.msg)
       return false
     }
-    jsonDialogVisible.value = false
+    if (jsonHandleType.value !== 'group') {
+        jsonDialogVisible.value = false
+      }else {
+        groupImportDialog.value = false
+      }
     $loadingBar.finish()
     // 重置上传表单
     resetFileForm()
