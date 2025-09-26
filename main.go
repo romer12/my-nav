@@ -6,9 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/glebarez/sqlite"
-	"gorm.io/gorm"
 	"html/template"
 	"io"
 	"nav/DTO"
@@ -17,6 +14,10 @@ import (
 	"nav/utils"
 	"net/http"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
+	"github.com/glebarez/sqlite"
+	"gorm.io/gorm"
 )
 
 var templates embed.FS
@@ -65,14 +66,14 @@ func main() {
 	r.POST("/import", importJson)
 
 	go func() {
-		err = r.Run(":9120")
+		err = r.Run(":9122")
 		if err != nil {
 			fmt.Println("服务器启动失败：" + err.Error())
 			return
 		}
 	}()
 
-	fmt.Println("【启动成功，请打开浏览器，在地址栏输入 http://127.0.0.1:9120/ 并按下回车键进行访问】")
+	fmt.Println("【启动成功，请打开浏览器，在地址栏输入 http://127.0.0.1:9122/ 并按下回车键进行访问】")
 	fmt.Println("【按下ctrl + c或者直接关闭命令行窗口结束运行】")
 
 	select {}
@@ -237,7 +238,7 @@ func importJson(c *gin.Context) {
 
 	// 分类型处理
 	switch opType {
-	case "full":
+	case "google":
 		// 从chrome导出的json书签文件导入
 		err = doImportFull(content)
 	case "group":
@@ -255,6 +256,9 @@ func importJson(c *gin.Context) {
 			return
 		}
 		err = doImportGroup(content, groupId)
+	case "normal":
+		// 导入分组和链接数据，需遵循指定json格式
+		err = doImportNormal(content)
 	}
 	if err != nil {
 		utils.ReturnError(c, "操作失败："+err.Error())
@@ -269,7 +273,7 @@ func doImportFull(content []byte) error {
 	var result DTO.GoogleJsonData
 	err := json.Unmarshal(content, &result)
 	if err != nil {
-		return err
+		return errors.New(fmt.Sprintf("json解析错误：%s", err.Error()))
 	}
 	// 遍历到group结构体
 	var groups []DTO.Group
@@ -306,7 +310,7 @@ func doImportGroup(content []byte, groupId int) error {
 	var links []DTO.Link
 	err := json.Unmarshal(content, &links)
 	if err != nil {
-		return err
+		return errors.New(fmt.Sprintf("json解析错误：%s", err.Error()))
 	}
 
 	if len(links) > 0 {
@@ -324,6 +328,24 @@ func doImportGroup(content []byte, groupId int) error {
 		db.Model(&DTO.Link{}).Create(&links)
 	} else {
 		return errors.New("解析文件数据为空，有可能是格式不正确")
+	}
+
+	return nil
+}
+
+// 从json文件导入分组和链接数据
+func doImportNormal(content []byte) error {
+	var groups []DTO.Group
+	err := json.Unmarshal(content, &groups)
+	if err != nil {
+		return errors.New(fmt.Sprintf("json解析错误：%s", err.Error()))
+	}
+
+	// 插入数据
+	for _, group := range groups {
+		if err := db.Create(&group).Error; err != nil {
+			return err
+		}
 	}
 
 	return nil

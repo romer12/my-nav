@@ -1,15 +1,16 @@
 <template>
   <div class="container">
     <div class="header">
+      <div class="header-title">
         <strong class="site-title">我的导航</strong>
-        <div class="current-item" v-show="headerTabShow" @click="toTop">
+        <!-- <div class="current-item" v-show="headerTabShow" @click="toTop">
           <strong v-if="groupData.length">
             {{ groupData[currentIndex].name }}
             <span class="group-count">（{{ groupData[currentIndex].links ? groupData[currentIndex].links.length : 0 }}）</span>
           </strong>
-        </div>
+        </div> -->
         <div class="header-middle">
-          <n-input placeholder="输入关键词" v-model="searchText" @input="handleSearchChange" clearable></n-input>          
+          <n-input class="search-input" placeholder="输入关键词" v-model="searchText" @input="handleSearchChange" clearable></n-input>
         </div>
         <div class="header-right">
           <n-switch
@@ -25,32 +26,34 @@
               <n-icon :component="Moon" />
             </template>
           </n-switch>
-
-          <n-button class="mr-20" type="primary" @click="loadGroupData">
-            <template #icon>
-              <Refresh />
-            </template>
-            刷新
-          </n-button>
-          <n-button class="mr-20" type="primary" @click="handleImport('full')">
-            <template #icon>
-              <CloudUploadOutline />
-            </template>
-            导入json
-          </n-button>
-          <n-button class="mr-20" type="primary" @click="handleExport">
-            <template #icon>
-              <DownloadOutline />
-            </template>
-            导出json
-          </n-button>
-          <n-button type="primary" @click="handleCreateGroup">
-            <template #icon>
-              <Add />
-            </template>
-            添加分组
-          </n-button>
         </div>
+      </div>
+      <div class="header-operation">
+        <n-button class="mr-20" type="primary" @click="loadGroupData">
+          <template #icon>
+            <Refresh />
+          </template>
+          刷新
+        </n-button>
+        <n-button class="mr-20" type="primary" @click="handleImport()">
+          <template #icon>
+            <CloudUploadOutline />
+          </template>
+          导入json
+        </n-button>
+        <n-button class="mr-20" type="primary" @click="handleExport">
+          <template #icon>
+            <DownloadOutline />
+          </template>
+          导出json
+        </n-button>
+        <n-button type="primary" @click="handleCreateGroup">
+          <template #icon>
+            <Add />
+          </template>
+          添加分组
+        </n-button>
+      </div>
       </div>
 
     <!--分组列表-->
@@ -90,7 +93,7 @@
 
           <n-popover trigger="hover">
             <template #trigger>
-              <n-button size="tiny" secondary  circle @click="handleGroupImport('group',item)">
+              <n-button size="tiny" secondary  circle @click="handleGroupImport(item)">
                 <template #icon>
                   <n-icon class="op-icon"><CloudUploadOutline /></n-icon>
                 </template>
@@ -115,41 +118,44 @@
 
     <div class="main-box">
       <!--链接列表-->
-      <div class="link-list media-link-class mb-20" v-if="mainBoxShow">
-        <div class="link-list-item" v-if="linksData && linksData.length" v-for="item in linksData">
-          <span :title="item.url" class="item-link" @click="openUrl(item.url)">{{ item.title }}</span>
-          <div class="link-operation">
-            <n-popover trigger="hover">
-              <template #trigger>
-                <n-button size="tiny" secondary  circle @click="handleUpdateLink(item)">
-                  <template #icon>
-                    <n-icon class="op-icon"><CreateOutline /></n-icon>
-                  </template>
-                </n-button>
-              </template>
-              <span>编辑链接</span>
-            </n-popover>
-            <n-popconfirm
-              negative-text="取消"
-              positive-text="确定"
-              @positive-click="deleteLink"
-            >
-              <template #trigger>
-                <n-button style="margin-left: 10px;" size="tiny" secondary  circle type="error" @click="handleDeleteLink(item)">
-                  <template #icon>
-                    <n-icon><TrashOutline /></n-icon>
-                  </template>
-                </n-button>
-              </template>
-              确定删除此链接？
-            </n-popconfirm>
+      <div class="link-list mb-20" v-if="mainBoxShow">
+        <div class="media-link-class" v-if="linksData && linksData.length">
+          <div class="link-list-item" v-for="item in linksData">
+            <span :title="item.url" class="item-link" @click="openUrl(item.url)">{{ item.title }}</span>
+            <div class="link-operation">
+              <n-popover trigger="hover">
+                <template #trigger>
+                  <n-button size="tiny" secondary  circle @click="handleUpdateLink(item)">
+                    <template #icon>
+                      <n-icon class="op-icon"><CreateOutline /></n-icon>
+                    </template>
+                  </n-button>
+                </template>
+                <span>编辑链接</span>
+              </n-popover>
+              <n-popconfirm
+                negative-text="取消"
+                positive-text="确定"
+                @positive-click="deleteLink"
+              >
+                <template #trigger>
+                  <n-button style="margin-left: 10px;" size="tiny" secondary  circle type="error" @click="handleDeleteLink(item)">
+                    <template #icon>
+                      <n-icon><TrashOutline /></n-icon>
+                    </template>
+                  </n-button>
+                </template>
+                确定删除此链接？
+              </n-popconfirm>
+            </div>
           </div>
         </div>
+        
         <n-empty v-else description="好像还没有东西哎"></n-empty>
       </div>
 
       <!--搜索结果-->
-      <div class="search-result link-list media-link-class mb-20" v-else style="display: flex;flex-direction: column;">
+      <div class="search-result mb-20" v-else style="display: flex;flex-direction: column;">
         <div class="search-result-header">
           搜索<n-highlight
           :text="searchText"
@@ -164,15 +170,18 @@
           }"
           />的结果如下
         </div>
-        <div class="link-list-item" v-if="searchListData && searchListData.length" v-for="item in searchListData">
-          <span :title="item.url" class="item-link" @click="openUrl(item.url)">{{ item.title }}</span>
+        <div class="link-list" v-if="searchListData && searchListData.length">
+          <div class="media-link-class">
+            <div class="link-list-item" v-for="item in searchListData">
+              <span :title="item.url" class="item-link" @click="openUrl(item.url)">{{ item.title }}</span>
+            </div>
+          </div>
         </div>
         <n-empty v-else description="好像还没有东西哎"></n-empty>
       </div>
 
     </div>
-    
-    
+        
 
     <!--添加、修改分组弹窗-->
     <modal-alert
@@ -249,10 +258,28 @@
       @confirm="jsonImportSubmit"
       style="width: 600px;"
     >
-      <div class="json-example">
-        <p>json格式示例：</p>
-        <div style="overflow-x: auto;"><pre>{{ jsonHandleType == 'full' ? jsonFileExample.full : jsonFileExample.group }}</pre></div>
-      </div>
+      <n-tabs type="line" default-value="google" @update:value="tabSelect" v-model:value="jsonHandleType" animated>
+        <!--google标签json导入-->
+        <n-tab-pane name="google" tab="google收藏夹json导入">
+          <div class="json-example">
+            <p>json格式示例：</p>
+            <div style="overflow-x: auto;"><pre v-if="jsonHandleType == 'google'">{{ jsonFileExample.google }}</pre></div>
+          </div>
+        </n-tab-pane>
+        <!--普通json导入-->
+        <n-tab-pane name="group" tab="导入链接到分组">
+          <div class="json-example">
+            <p>json格式示例：</p>
+            <div style="overflow-x: auto;"><pre v-if="jsonHandleType == 'group'">{{ jsonFileExample.group }}</pre></div>
+          </div>
+        </n-tab-pane>
+        <n-tab-pane name="normal" tab="导入分组和链接数据">
+          <div class="json-example">
+            <p>json格式示例：</p>
+            <div style="overflow-x: auto;"><pre v-if="jsonHandleType == 'normal'">{{ jsonFileExample.normal }}</pre></div>
+          </div>
+        </n-tab-pane>
+      </n-tabs>
       <div class="request-error" v-show="uploadError"><p style="color: red;">{{ uploadError }}</p></div>
       <n-upload
         ref="uploadRef"
@@ -286,6 +313,8 @@ import {
   NUpload,
   NSwitch,
   NHighlight,
+  NTabs,
+  NTabPane,
   useThemeVars,
   type FormInst,
   type FormItemRule,
@@ -310,6 +339,20 @@ import type { Group, Links } from '@/types/data'
 import fetchRequest from '@/utils/api'
 import { useThemeStore } from '@/stores/theme'
 import BackToTop from '@/components/common/BackToTop.vue'
+
+const apiUrl = import.meta.env.VITE_BASE_API
+
+interface LinkItem {
+  title: string
+  url: string
+  id?: number
+  group_id?: number
+}
+
+interface ExportItem {
+  name: string
+  links?: LinkItem[]
+}
 
 const headerTabShow = ref(false)
 const searchText = ref('') // 搜索关键词
@@ -420,10 +463,10 @@ const createOrUpdateGroup = async(formData: any, type: string) => {
   let url = ''
   switch (type) {
     case 'create':
-      url = 'http://localhost:9120/groups'
+      url = `${apiUrl}/groups`
       break;  
     case 'update':
-      url = 'http://localhost:9120/group/' + formData.id
+      url = `${apiUrl}/group/${formData.id}`
       break;
   }
   try {
@@ -453,7 +496,7 @@ const delGroupSubmit = async() => {
 
   try {
     const result = await fetchRequest<any>({
-      url: 'http://localhost:9120/groups/' + groupForm.value.id,
+      url: `${apiUrl}/groups/${groupForm.value.id}`,
       method: 'DELETE'
     });
     if (groupData) {
@@ -565,11 +608,11 @@ const createOrUpdateLink = async(formData: any, type: string) => {
   let url = ''
   switch (type) {
     case 'create':
-      url = 'http://localhost:9120/links'
+      url = `${apiUrl}/links`
       formData.id = null
       break;  
     case 'update':
-      url = 'http://localhost:9120/link'
+      url = `${apiUrl}/link`
       break;
   }
   try {
@@ -606,7 +649,7 @@ const deleteLink = async () => {
 
   try {
     const result = await fetchRequest<any>({
-      url: 'http://localhost:9120/links/' + linkForm.value.id, 
+      url: `${apiUrl}/links/${linkForm.value.id}`, 
       method: 'DELETE'
     })        
     $message.success(result.msg)
@@ -657,11 +700,11 @@ const handleSearchChange = debounce((text:string) => {
 const uploadData = ref({})
 const uploadError = ref('')
 const jsonDialogVisible = ref(false)
-const jsonHandleType = ref('full')
+const jsonHandleType = ref('google')
 const uploadRef = ref<UploadInst | null>(null)
 const fileList = ref<UploadFileInfo[]>([])
 const jsonFileExample = {
-  'full': `  
+  'google': `  
     该导入仅支持chrome浏览器导出的json文件！    
     windows 系统：
       C:/Users/Administrator/AppData/Local/Google/Chrome/User Data/Default/Bookmarks
@@ -679,23 +722,73 @@ const jsonFileExample = {
         "url": "https://www.baidu.com"
       }
     ]
+  `,
+  'normal': `
+    [
+      {
+        name: '分组1'
+        links: [
+          {
+            title: '链接1',
+            url: 'http://wwww.example.com'
+          },
+          {
+            title: '链接2',
+            url: 'http://wwww.example.com'
+          }
+        ]
+      }
+    ]
   `
 }
 
+const tabSelect = (value:string) => {
+  jsonHandleType.value = value  
+}
+
 // 导入chrome书签json文件数据
-const handleImport = async(type: string) => {
-  jsonHandleType.value = type
+const handleImport = async() => {
   jsonDialogVisible.value = !jsonDialogVisible.value
   resetFileForm()
   uploadData.value = {
-    op_type: type,
+    op_type: jsonHandleType.value,
     group_id: null
   }
 }
+
+
 // 导出数据为json
 const handleExport = async() => {
+  // 处理数据成上面的格式
+  if (!groupData.value || groupData.value.length === 0) {
+    $message.error('数据为空')
+    return false
+  }
+
+  let exportData: ExportItem[] = []
+  groupData.value.forEach((item: any) => {
+    let linksArr: LinkItem[] = []
+    if (item.links && item.links.length > 0) {      
+      item.links.forEach((link:any) => {
+        linksArr.push({
+          title: link.title,
+          url: link.url
+        })
+      })
+      
+      exportData.push({
+        name: item.name,
+        links: linksArr
+      })
+    } else {
+      exportData.push({
+        name: item.name
+      })
+    }
+  })
+
   // 将数据转换为 JSON 字符串
-  const jsonString = JSON.stringify(linksData.value, null, 2); // 格式化为可读的 JSON
+  const jsonString = JSON.stringify(exportData, null, 2); // 格式化为可读的 JSON
 
   // 创建一个 Blob 对象
   const blob = new Blob([jsonString], { type: 'application/json' });
@@ -717,12 +810,12 @@ const handleExport = async() => {
   URL.revokeObjectURL(url);
 }
 // 从json文件导入链接数据到某个组
-const handleGroupImport = async(type: string, item: any) => {
+const handleGroupImport = async(item: any) => {
   jsonDialogVisible.value = !jsonDialogVisible.value
-  jsonHandleType.value = type
+  jsonHandleType.value = 'group'
   resetFileForm()
   uploadData.value = {
-    op_type: type,
+    op_type: jsonHandleType.value,
     group_id: item.id
   }  
 }
@@ -734,6 +827,7 @@ const resetFileForm = () => {
 }
 
 const jsonImportSubmit = () => {
+
   if(!fileList.value.length) {
     $message.error('请先选择文件！')
     return false
@@ -750,7 +844,7 @@ const uploadFile = async(file: any,formOtherData: any) => {
   const formData = new FormData();
   formData.append('file', file.file); // 将文件添加到 FormData 中
 
-  let url = 'http://localhost:9120/import?type=' + formOtherData.op_type + '&group_id='+ formOtherData.group_id
+  let url = `${apiUrl}/import?type=` + formOtherData.op_type + '&group_id='+ formOtherData.group_id
 
   try {    
     const response = await fetch(url, {
@@ -808,7 +902,7 @@ const loadGroupData = async() => {
   try {
     groupData.value = []; // 清空之前的数据
     const result = await fetchRequest<any>({
-      url: 'http://localhost:9120/groups',
+      url: `${apiUrl}/groups`,
 
     })
     cacheListData.value = []
@@ -896,40 +990,46 @@ onUnmounted(() => {
   .header{
     padding: 10px 0;
     margin: 10px 0 20px 0;
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    width: 100%;    
     background-color: white;
     position: sticky;
     top: 0;
     left: 0;
     z-index: 10;
 
-    .current-item{
+    .header-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      .current-item{
+        display: flex;
+        align-items: center;
+        background-color: #29292a;
+        color: white;
+        border-radius: 8px;
+        overflow: hidden;
+        padding: 5px 8px;
+        font-size: 12px;
+        animation: fadeInOut 1s;
+        cursor: pointer;
+      }
+      @keyframes fadeInOut {
+        0% {
+          opacity: 0; /* 开始时透明 */
+        }
+        100% {
+          opacity: 1; /* 结束时再次透明 */
+        }
+      }
+    }
+    /** 操作 */
+    .header-operation {
       display: flex;
       align-items: center;
-      background-color: #29292a;
-      color: white;
-      border-radius: 8px;
-      overflow: hidden;
-      padding: 5px 8px;
-      font-size: 12px;
-      animation: fadeInOut 1s;
-      cursor: pointer;
-    }
-    @keyframes fadeInOut {
-      0% {
-        opacity: 0; /* 开始时透明 */
-      }
-      100% {
-        opacity: 1; /* 结束时再次透明 */
-      }
-    }
-
-    .header-right{
-      display: flex;
-      align-items: center;
+      padding: 10px 0;
+      margin-top: 10px;
+      flex-wrap: wrap;
+      gap: 10px;
     }
   }
   /** 分组列表 */  
@@ -973,42 +1073,52 @@ onUnmounted(() => {
       }
     }
   }
+
   /** 链接列表 */
   .link-list{
-    display: grid;
-    gap: 20px;
     background-color: white;
-    padding: 0 5px;
+    .media-link-class{
+      display: grid;
+      gap: 20px;
+      padding: 0 5px;
 
-    .link-list-item{
-      display: flex;
-      justify-content: space-between;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 14px;
-      padding: 5px 10px;
-      &:hover{
-        background-color: #ddd;
-        a{
-          color: #0077ff;
-        }
-      }
-
-      .item-link{
+      .link-list-item{
         display: flex;
-        align-items: center;
-        flex: 1;
-        color: #066bd3;
-        text-decoration: none;
+        justify-content: space-between;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        padding: 5px 10px;
         &:hover{
-          color: #0077ff;
+          background-color: #ddd;
+          a{
+            color: #0077ff;
+          }
+        }
+
+        .item-link{
+          display: flex;
+          align-items: center;
+          flex: 1;
+          color: #066bd3;
+          text-decoration: none;
+          &:hover{
+            color: #0077ff;
+          }
+        }
+        .link-operation{
+          display: flex;
+          align-items: center;
         }
       }
-      .link-operation{
-        display: flex;
-        align-items: center;
-      }
+    }
+  }
+
+  /** 搜索结果 */
+  .search-result {
+    .search-result-header {
+      padding-bottom: 20px;
     }
   }
 }
@@ -1035,21 +1145,55 @@ onUnmounted(() => {
 
 /*屏幕简单适配*/
 @media (max-width: 600px){
-  .media-group-class{grid-template-columns: repeat(1,1fr);}
-  .media-link-class{grid-template-columns: repeat(1,1fr);}
+  .media-group-class {
+    grid-template-columns: repeat(1,1fr);
+  }
+  .media-link-class {
+    grid-template-columns: repeat(1,1fr);
+  }
+  .site-title, .current-item, .header-right {
+    display: none;
+  }
+  .header-middle {
+    width: 100%;
+  }
 }
-@media (min-width: 601px) and (max-width: 1200px){
-  .media-group-class{grid-template-columns: repeat(3,1fr);}
-  .media-link-class{grid-template-columns: repeat(2,1fr);}
+@media (min-width: 601px) and (max-width: 911px){
+  .media-group-class {
+    grid-template-columns: repeat(3,1fr);
+  }
+  .media-link-class {
+    grid-template-columns: repeat(1,1fr);
+  }
+  .site-title, .current-item, .header-right {
+    display: none;
+  }
+  .header-middle {
+    width: 100%;
+  }
 }
-
+@media (min-width: 912px) and (max-width: 1200px){
+  .media-group-class {
+    grid-template-columns: repeat(3,1fr);
+  }
+  .media-link-class {
+    grid-template-columns: repeat(2,1fr);
+  }
+}
 @media (min-width: 1201px) and (max-width: 1500px){
-  .media-group-class{grid-template-columns: repeat(5,1fr);}
-  .media-link-class{grid-template-columns: repeat(2,1fr);}
+  .media-group-class {
+    grid-template-columns: repeat(5,1fr);
+  }
+  .media-link-class {
+    grid-template-columns: repeat(2,1fr);
+  }
 }
-
 @media (min-width: 1501px){
-  .media-group-class{grid-template-columns: repeat(7,1fr);}
-  .media-link-class{grid-template-columns: repeat(2,1fr);}
+  .media-group-class {
+    grid-template-columns: repeat(7,1fr);
+  }
+  .media-link-class {
+    grid-template-columns: repeat(2,1fr);
+  }
 }
 </style>
