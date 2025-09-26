@@ -38,6 +38,12 @@
             </template>
             导入json
           </n-button>
+          <n-button class="mr-20" type="primary" @click="handleExport">
+            <template #icon>
+              <DownloadOutline />
+            </template>
+            导出json
+          </n-button>
           <n-button type="primary" @click="handleCreateGroup">
             <template #icon>
               <Add />
@@ -295,7 +301,8 @@ import {
   CreateOutline,
   TrashOutline,
   Sunny,
-  Moon
+  Moon,
+  DownloadOutline
 } from '@vicons/ionicons5'
 import ModalAlert from '@/components/common/ModalAlert.vue'
 import { ref, onMounted, onUnmounted, computed } from 'vue'
@@ -684,6 +691,30 @@ const handleImport = async(type: string) => {
     op_type: type,
     group_id: null
   }
+}
+// 导出数据为json
+const handleExport = async() => {
+  // 将数据转换为 JSON 字符串
+  const jsonString = JSON.stringify(linksData.value, null, 2); // 格式化为可读的 JSON
+
+  // 创建一个 Blob 对象
+  const blob = new Blob([jsonString], { type: 'application/json' });
+
+  // 创建一个 URL 对象
+  const url = URL.createObjectURL(blob);
+
+  // 创建一个链接元素
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'data.json'; // 设置下载文件名
+
+  // 触发下载
+  document.body.appendChild(a);
+  a.click();
+
+  // 清理
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 // 从json文件导入链接数据到某个组
 const handleGroupImport = async(type: string, item: any) => {
