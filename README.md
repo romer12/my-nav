@@ -16,6 +16,7 @@ windows 系统：
 mac 系统：
   /Users/一般是你的电脑账号名/Library/Application Support/Google/Chrome/Default/Bookmarks
 ```
+找到该文件后，重命名为Bookmarks.json，这个时候就能上传json并导入数据了
 
 ### 运行步骤
 #### 1.克隆项目

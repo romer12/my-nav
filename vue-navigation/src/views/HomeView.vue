@@ -264,7 +264,10 @@
           <div class="json-example">
             <p>json格式示例：</p>
             <div style="overflow-x: auto;"><pre v-if="jsonHandleType == 'google'">{{ jsonFileExample.google }}</pre></div>
-          </div>
+            <div style="overflow-x: auto;">
+              <pre style="color:chocolate;">找到该文件后，重命名为Bookmarks.json，这个时候就能上传json并导入数据了</pre>
+            </div>
+          </div>          
         </n-tab-pane>
         <!--普通json导入-->
         <n-tab-pane name="normal" tab="导入分组和链接数据">
@@ -288,6 +291,7 @@
       </n-upload>
     </modal-alert>
 
+    <!--导入链接到分组弹窗-->
     <modal-alert
       v-model:show="groupImportDialog"
       title="上传json文件并导入"
@@ -299,7 +303,7 @@
     >
       <div class="json-example">
         <p>json格式示例：</p>
-        <div style="overflow-x: auto;"><pre>{{ jsonFileExample.group }}</pre></div>
+        <div style="overflow-x: auto;"><pre>{{ jsonFileExample.group }}</pre></div>        
       </div>
       <div class="request-error" v-show="uploadError"><p style="color: red;">{{ uploadError }}</p></div>
       <n-upload
