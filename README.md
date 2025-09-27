@@ -100,12 +100,12 @@ style.css
 回到my-nav项目根目录，执行下面的命令进行交叉编译生成可执行文件
 ```bash
 #编译为windows可执行文件
-GOOS=windows GOARCH=amd64 go build -o myapp.exe
+GOOS=windows GOARCH=amd64 go build -o windows-mynav.exe
 
 #编译为linux可执行文件
-GOOS=linux GOARCH=amd64 go build -o myapp-linux-amd64
+GOOS=linux GOARCH=amd64 go build -o linux-mynav
 
 #编译为mac os可执行文件
-GOOS=darwin GOARCH=amd64 go build -o myapp-darwin-amd64
+GOOS=darwin GOARCH=amd64 go build -o mac-mynav
 
 ```
